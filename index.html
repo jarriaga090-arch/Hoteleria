@@ -305,3 +305,663 @@
       background-color: #f4f7fc;
       font-weight: 500;
     }
+
+    .other-input-wrap {
+      margin-top: 0.35rem;
+      margin-bottom: 0.4rem;
+      margin-left: 1.75rem;
+      display: none;
+    }
+
+    .other-input-wrap.visible {
+      display: block;
+    }
+
+    /* Selector de rango de fechas con calendario */
+    .date-range-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+      background-color: var(--bg-subtle);
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .date-range-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .date-range-item span {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .date-range-item.full-span {
+      grid-column: 1 / -1;
+    }
+
+    /* Sección 3: Bloques dinámicos por evento */
+    .empty-events-notice {
+      background-color: var(--bg-subtle);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.92rem;
+    }
+
+    .event-proposal-card {
+      border: 1px solid #cbd5e1;
+      border-radius: var(--radius);
+      margin-bottom: 1.25rem;
+      background-color: #ffffff;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+    }
+
+    .event-proposal-header {
+      background-color: var(--primary);
+      color: #ffffff;
+      padding: 0.95rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .event-proposal-header h3 {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .event-proposal-header .toggle-badge {
+      font-size: 0.8rem;
+      background: rgba(255, 255, 255, 0.16);
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+    }
+
+    .event-proposal-body {
+      padding: 1.5rem;
+    }
+
+    .event-proposal-card.collapsed .event-proposal-body {
+      display: none;
+    }
+
+    .sub-block {
+      margin-bottom: 1.75rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .sub-block:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .sub-block-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 1rem;
+      background: #f1f5f9;
+      padding: 0.45rem 0.75rem;
+      border-radius: 6px;
+    }
+
+    .question-block {
+      margin-bottom: 1.25rem;
+    }
+
+    .question-block:last-child {
+      margin-bottom: 0;
+    }
+
+    .question-title {
+      font-size: 0.93rem;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 0.5rem;
+    }
+
+    /* Botón y pie */
+    .closing-message {
+      background-color: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 0.93rem;
+      color: var(--text-main);
+    }
+
+    .closing-message strong {
+      display: block;
+      margin-top: 0.45rem;
+      color: var(--primary);
+      font-size: 1rem;
+    }
+
+    .submit-btn {
+      width: 100%;
+      margin-top: 1.5rem;
+      padding: 0.95rem 1.5rem;
+      background-color: var(--primary);
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+    }
+
+    .submit-btn:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .submit-btn:active {
+      transform: scale(0.995);
+    }
+
+    /* Mensaje de confirmación al enviar */
+    .success-banner {
+      display: none;
+      background-color: #ecfdf5;
+      border: 1px solid #10b981;
+      color: #065f46;
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      margin-top: 1.5rem;
+      text-align: center;
+    }
+
+    @media (max-width: 680px) {
+      body {
+        padding: 1rem 0.5rem 2.5rem;
+      }
+      .form-header,
+      form {
+        padding: 1.5rem 1.25rem;
+      }
+      .grid-2,
+      .date-range-grid {
+        grid-template-columns: 1fr;
+      }
+      .form-header h1 {
+        font-size: 1.45rem;
+      }
+      .other-input-wrap {
+        margin-left: 0.75rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Pantalla de bienvenida (Splash) -->
+  <div id="splash-screen">
+    <img src="logotipo-ocv-monterrey.svg" alt="OCV Monterrey" />
+    <div class="splash-loader"></div>
+  </div>
+
+  <div class="container">
+    <!-- Encabezado -->
+    <header class="form-header">
+      <div class="logo-bar">
+        <img src="logotipo-ocv-monterrey.svg" alt="OCV Monterrey" class="header-logo" />
+      </div>
+      <h1>OCV Monterrey | Eventos 2027</h1>
+      <p class="subtitle">Oficina de Convenciones y Visitantes de Monterrey</p>
+      <div class="objective-box">
+        <strong>Objetivo:</strong> Identificar las oportunidades de colaboración entre los hoteles participantes y los eventos presentados por la OCV Monterrey, conociendo su capacidad de apoyo, beneficios disponibles y alternativas de promoción para generar alianzas estratégicas.
+      </div>
+    </header>
+
+    <!-- Formulario -->
+    <form id="ocvForm">
+
+      <!-- SECCIÓN 1 -->
+      <section class="form-section">
+        <h2 class="section-title">Sección 1. Datos Generales del Hotel</h2>
+        <p class="section-desc">Complete la información de contacto y capacidad general de su propiedad.</p>
+
+        <div class="grid-2">
+          <div class="field-group full-width">
+            <label class="field-label" for="hotel_nombre">1. Nombre del hotel <span class="req">*</span></label>
+            <input type="text" id="hotel_nombre" name="hotel_nombre" placeholder="Ej. Hotel Monterrey Centro" required />
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="ejecutivo_nombre">2. Nombre del ejecutivo o contacto responsable <span class="req">*</span></label>
+            <input type="text" id="ejecutivo_nombre" name="ejecutivo_nombre" placeholder="Nombre completo" required />
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="ejecutivo_cargo">3. Cargo del ejecutivo <span class="req">*</span></label>
+            <input type="text" id="ejecutivo_cargo" name="ejecutivo_cargo" placeholder="Ej. Gerente de Ventas / Grupos" required />
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="ejecutivo_correo">4. Correo electrónico <span class="req">*</span></label>
+            <input type="email" id="ejecutivo_correo" name="ejecutivo_correo" placeholder="correo@hotel.com" required />
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="ejecutivo_telefono">5. Número de contacto <span class="req">*</span></label>
+            <input type="tel" id="ejecutivo_telefono" name="ejecutivo_telefono" placeholder="Ej. 81 1234 5678" required />
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="hotel_categoria">6. Categoría del hotel <span class="req">*</span></label>
+            <select id="hotel_categoria" name="hotel_categoria" required>
+              <option value="">Seleccione una categoría...</option>
+              <option value="3 estrellas">3 estrellas</option>
+              <option value="4 estrellas">4 estrellas</option>
+              <option value="5 estrellas">5 estrellas</option>
+              <option value="Gran Turismo">Gran Turismo</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="hotel_habitaciones">7. Número total de habitaciones del hotel <span class="req">*</span></label>
+            <input type="number" id="hotel_habitaciones" name="hotel_habitaciones" min="1" placeholder="Ej. 150" required />
+          </div>
+        </div>
+      </section>
+
+      <!-- SECCIÓN 2 -->
+      <section class="form-section">
+        <h2 class="section-title">Sección 2. Selección de Eventos</h2>
+        <p class="section-desc">
+          <strong>¿En cuáles de los siguientes eventos tendría interés en participar como hotel colaborador?</strong><br />
+          Seleccionar todas las opciones que correspondan.
+        </p>
+
+        <div class="options-list" id="eventsSelectorList">
+          <!-- Se llena dinámicamente desde JS para mantener sincronía exacta con Sección 3 -->
+        </div>
+      </section>
+
+      <!-- SECCIÓN 3 -->
+      <section class="form-section">
+        <h2 class="section-title">Sección 3. Propuesta de Colaboración por Evento</h2>
+        <p class="section-desc">Contestar esta sección por cada evento seleccionado en el paso anterior.</p>
+
+        <div id="dynamicEventsContainer">
+          <div class="empty-events-notice">
+            Seleccione uno o más eventos en la <strong>Sección 2</strong> para desplegar las opciones de propuesta de colaboración correspondientes.
+          </div>
+        </div>
+      </section>
+
+      <!-- SECCIÓN 4 -->
+      <section class="form-section">
+        <h2 class="section-title">Sección 4. Condiciones y Observaciones</h2>
+
+        <div class="field-group">
+          <label class="field-label">1. ¿El apoyo ofrecido está sujeto a alguna condición o disponibilidad? <span class="req">*</span></label>
+          <div class="options-list" style="flex-direction: row; gap: 1.5rem;">
+            <label class="check-item">
+              <input type="radio" name="sujeto_condicion" value="Sí" required />
+              <span>Sí</span>
+            </label>
+            <label class="check-item">
+              <input type="radio" name="sujeto_condicion" value="No" required />
+              <span>No</span>
+            </label>
+          </div>
+          <div id="condicionDetalleWrap" class="other-input-wrap" style="margin-left: 0; margin-top: 0.75rem;">
+            <label class="field-label" for="condicion_detalle" style="font-weight: 500; font-size: 0.88rem;">Especifique las condiciones o disponibilidad:</label>
+            <textarea id="condicion_detalle" name="condicion_detalle" placeholder="Indique fechas blackout, ocupación mínima, vigencia u otras condiciones..."></textarea>
+          </div>
+        </div>
+
+        <div class="field-group" style="margin-top: 1.25rem;">
+          <label class="field-label" for="comentarios_adicionales">2. Comentarios o propuestas adicionales del hotel</label>
+          <textarea id="comentarios_adicionales" name="comentarios_adicionales" placeholder="Escriba aquí cualquier comentario o propuesta de valor adicional..."></textarea>
+        </div>
+      </section>
+
+      <!-- SECCIÓN 5 -->
+      <section class="form-section">
+        <h2 class="section-title">Sección 5. Confirmación</h2>
+        <p class="section-desc"><strong>¿El hotel estaría interesado en avanzar con una propuesta formal de colaboración?</strong></p>
+
+        <div class="options-list">
+          <label class="check-item">
+            <input type="checkbox" name="confirmacion[]" value="Sí" />
+            <span>Sí.</span>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" name="confirmacion[]" value="Sí, sujeto a revisión interna" />
+            <span>Sí, sujeto a revisión interna.</span>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" name="confirmacion[]" value="Nos gustaría conocer más información" />
+            <span>Nos gustaría conocer más información.</span>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" name="confirmacion[]" value="Por el momento no" />
+            <span>Por el momento no.</span>
+          </label>
+        </div>
+
+        <div class="closing-message">
+          Gracias por su disposición e interés en generar alianzas que fortalezcan la oferta de hospedaje y la atracción de eventos a Monterrey.
+          <strong>OCV Monterrey</strong>
+        </div>
+      </section>
+
+      <button type="submit" class="submit-btn">Enviar propuesta de colaboración</button>
+
+      <div id="successBanner" class="success-banner">
+        <strong>¡Propuesta registrada correctamente!</strong><br />
+        Hemos recibido la información de su hotel para los eventos 2027. El equipo de OCV Monterrey se pondrá en contacto a la brevedad.
+      </div>
+
+    </form>
+  </div>
+
+  <script>
+    // Control del Splash Screen
+    window.addEventListener("load", () => {
+      const splash = document.getElementById("splash-screen");
+      setTimeout(() => {
+        splash.classList.add("hidden");
+        setTimeout(() => splash.remove(), 650);
+      }, 1600);
+    });
+
+    const EVENTOS_2027 = [
+      { id: "ironman_70_3", nombre: "IronMan 70.3 Monterrey" },
+      { id: "icpc_latam_2027", nombre: "The ICPC Latin America Championship 2027" },
+      { id: "tcmx_icpc_2027", nombre: "TCMX: ICPC Training Camp Mexico 2027" },
+      { id: "nacional_softbol", nombre: "40 nacional varonil Master Supermaster mayores decanos y superdecanos de softbol" },
+      { id: "ciencias_fisiologicas", nombre: "Congreso Nacional de Ciencias Fisiológicas" },
+      { id: "universidades_salud", nombre: "XI Congreso Nacional - IV Encuentro Interuniversitario de Universidades Promotoras de la Salud" },
+      { id: "expo_seguridad", nombre: "Expo Seguridad Monterrey" },
+      { id: "patologia_clinica", nombre: "57° Congreso Nacional de Patología Clínica" },
+      { id: "aiag_automotive_2027", nombre: "AIAG MEXICO AUTOMOTIVE FORUM 2027" }
+    ];
+
+    const eventsSelectorList = document.getElementById("eventsSelectorList");
+    const dynamicEventsContainer = document.getElementById("dynamicEventsContainer");
+
+    // 1. Renderizar checkboxes de Sección 2
+    EVENTOS_2027.forEach(ev => {
+      const label = document.createElement("label");
+      label.className = "check-item event-card-option";
+      label.innerHTML = `
+        <input type="checkbox" name="eventos_seleccionados[]" value="${ev.id}" data-event-name="${ev.nombre}" />
+        <span>${ev.nombre}</span>
+      `;
+      eventsSelectorList.appendChild(label);
+    });
+
+    // Helper para generar listas de checkboxes dentro de cada evento
+    // mode: 'other_only' (solo abre texto en "Otro.") | 'all_inputs' (abre texto en todos, y calendario de rango en fechas)
+    function renderCheckboxGroup(eventId, groupName, options, mode = "other_only") {
+      const itemsHtml = options.map((opt, idx) => {
+        const labelText = typeof opt === "string" ? opt : opt.label;
+        const inputType = typeof opt === "object" && opt.type ? opt.type : "text";
+        const placeholder = typeof opt === "object" && opt.placeholder ? opt.placeholder : "Especifique...";
+        const wrapId = `${eventId}_${groupName}_item_${idx}`;
+
+        let shouldHaveInput = false;
+        if (mode === "all_inputs") {
+          shouldHaveInput = true;
+        } else if (mode === "other_only" && labelText === "Otro.") {
+          shouldHaveInput = true;
+        }
+
+        const toggleAttr = shouldHaveInput ? `data-toggle-target="${wrapId}"` : "";
+
+        let fieldHtml = "";
+        if (shouldHaveInput) {
+          if (inputType === "daterange" || inputType === "daterange_time") {
+            fieldHtml = `
+              <div id="${wrapId}" class="other-input-wrap">
+                <div class="date-range-grid">
+                  <div class="date-range-item">
+                    <span>Fecha inicial (Del):</span>
+                    <input type="date" name="propuestas[${eventId}][${groupName}_detalle][${idx}][inicio]" />
+                  </div>
+                  <div class="date-range-item">
+                    <span>Fecha final (Al):</span>
+                    <input type="date" name="propuestas[${eventId}][${groupName}_detalle][${idx}][fin]" />
+                  </div>
+                  ${inputType === "daterange_time" ? `
+                    <div class="date-range-item full-span">
+                      <span>Horarios disponibles:</span>
+                      <input type="text" name="propuestas[${eventId}][${groupName}_detalle][${idx}][horario]" placeholder="Ej. De 8:00 a 18:00 hrs" />
+                    </div>
+                  ` : ""}
+                </div>
+              </div>
+            `;
+          } else {
+            fieldHtml = `
+              <div id="${wrapId}" class="other-input-wrap">
+                <input type="text" name="propuestas[${eventId}][${groupName}_detalle][${idx}]" placeholder="${placeholder}" />
+              </div>
+            `;
+          }
+        }
+
+        return `
+          <label class="check-item">
+            <input type="checkbox" name="propuestas[${eventId}][${groupName}][]" value="${labelText}" ${toggleAttr} />
+            <span>${labelText}</span>
+          </label>
+          ${fieldHtml}
+        `;
+      }).join("");
+
+      return `<div class="options-list">${itemsHtml}</div>`;
+    }
+
+    // 2. Generar tarjeta de Sección 3 para un evento específico
+    function createEventProposalCard(ev) {
+      const card = document.createElement("div");
+      card.className = "event-proposal-card";
+      card.id = `proposal_card_${ev.id}`;
+
+      card.innerHTML = `
+        <div class="event-proposal-header" onclick="this.parentElement.classList.toggle('collapsed')">
+          <h3>${ev.nombre}</h3>
+          <span class="toggle-badge">Mostrar / Ocultar</span>
+        </div>
+        <div class="event-proposal-body">
+
+          <!-- A. APOYO EN HOSPEDAJE -->
+          <div class="sub-block">
+            <div class="sub-block-title">A. APOYO EN HOSPEDAJE</div>
+
+            <div class="question-block">
+              <div class="question-title">1. ¿Qué tipo de apoyo podría ofrecer el hotel?</div>
+              ${renderCheckboxGroup(ev.id, "tipo_apoyo", [
+                "Habitaciones en cortesía (patrocinio).",
+                "Tarifa preferencial para participantes.",
+                "Tarifa preferencial para staff y talento.",
+                "Descuento especial para grupos.",
+                "Apoyo parcial en hospedaje.",
+                "Otro."
+              ], "other_only")}
+            </div>
+
+            <div class="question-block">
+              <div class="question-title">2. En caso de ofrecer habitaciones en cortesía:</div>
+              ${renderCheckboxGroup(ev.id, "cortesia_detalles", [
+                { label: "Tipo de habitación disponible.", placeholder: "Ej. Sencilla, Doble, Suite..." },
+                { label: "Número de habitaciones que podría otorgar.", placeholder: "Ej. 5 habitaciones" },
+                { label: "Número de noches disponibles.", placeholder: "Ej. 3 noches" },
+                { label: "Fechas de disponibilidad.", type: "daterange" },
+                { label: "¿El apoyo contempla desayuno?", placeholder: "Ej. Sí, desayuno buffet / No incluye" },
+                { label: "¿Existen condiciones o restricciones?", placeholder: "Indique condiciones o restricciones..." }
+              ], "all_inputs")}
+            </div>
+
+            <div class="question-block">
+              <div class="question-title">3. En caso de ofrecer tarifas preferenciales:</div>
+              ${renderCheckboxGroup(ev.id, "tarifas_detalles", [
+                { label: "Tipo de habitación.", placeholder: "Ej. Estándar sencilla / doble" },
+                { label: "Tarifa pública.", placeholder: "Ej. $2,500 MXN + impuestos" },
+                { label: "Tarifa preferencial ofrecida.", placeholder: "Ej. $1,850 MXN + impuestos" },
+                { label: "Porcentaje de descuento.", placeholder: "Ej. 25% de descuento" },
+                { label: "Vigencia de la tarifa.", type: "daterange" },
+                { label: "¿La tarifa incluye desayuno?", placeholder: "Ej. Sí / No" },
+                { label: "¿Aplica para participantes, acompañantes, staff o todos?", placeholder: "Especifique a quién aplica..." }
+              ], "all_inputs")}
+            </div>
+          </div>
+
+          <!-- B. ESPACIOS E INSTALACIONES -->
+          <div class="sub-block">
+            <div class="sub-block-title">B. ESPACIOS E INSTALACIONES</div>
+
+            <div class="question-block">
+              <div class="question-title">4. ¿El hotel cuenta con espacios que podría facilitar para actividades relacionadas con el evento?</div>
+              ${renderCheckboxGroup(ev.id, "espacios_tipos", [
+                "Salones de reuniones.",
+                "Salones para conferencias o plenarias.",
+                "Espacios para talleres o actividades.",
+                "Terrazas o áreas al aire libre.",
+                "Áreas comerciales o de exhibición.",
+                "Otro."
+              ], "other_only")}
+            </div>
+
+            <div class="question-block">
+              <div class="question-title">5. En caso de contar con disponibilidad:</div>
+              ${renderCheckboxGroup(ev.id, "espacios_disponibilidad", [
+                { label: "Nombre o tipo de espacio.", placeholder: "Ej. Salón Monterrey / Terraza Norte" },
+                { label: "Capacidad máxima.", placeholder: "Ej. 120 personas en montaje auditorio" },
+                { label: "Fechas y horarios disponibles.", type: "daterange_time" },
+                { label: "¿Se ofrecería en cortesía o con tarifa preferencial?", placeholder: "Ej. En cortesía / Tarifa preferencial de $..." },
+                { label: "¿Incluye mobiliario y equipo audiovisual?", placeholder: "Especifique qué incluye..." },
+                { label: "Condiciones de uso.", placeholder: "Indique condiciones de uso del espacio..." }
+              ], "all_inputs")}
+            </div>
+          </div>
+
+          <!-- C. BENEFICIOS ADICIONALES -->
+          <div class="sub-block">
+            <div class="sub-block-title">C. BENEFICIOS ADICIONALES</div>
+
+            <div class="question-block">
+              <div class="question-title">6. ¿Qué otros beneficios podría ofrecer el hotel?</div>
+              ${renderCheckboxGroup(ev.id, "beneficios_adicionales", [
+                "Descuentos en alimentos y bebidas.",
+                "Coffee breaks.",
+                "Descuentos en restaurantes.",
+                "Estacionamiento.",
+                "Salas de juntas.",
+                "Transporte.",
+                "Otro."
+              ], "other_only")}
+            </div>
+          </div>
+
+        </div>
+      `;
+
+      return card;
+    }
+
+    // 3. Escuchar selección de eventos en Sección 2
+    eventsSelectorList.addEventListener("change", (e) => {
+      if (e.target.type !== "checkbox") return;
+
+      const eventId = e.target.value;
+      const eventName = e.target.dataset.eventName;
+      const existingCard = document.getElementById(`proposal_card_${eventId}`);
+      const notice = dynamicEventsContainer.querySelector(".empty-events-notice");
+
+      if (e.target.checked) {
+        if (notice) notice.remove();
+        if (!existingCard) {
+          const card = createEventProposalCard({ id: eventId, nombre: eventName });
+          dynamicEventsContainer.appendChild(card);
+        }
+      } else {
+        if (existingCard) existingCard.remove();
+        if (dynamicEventsContainer.children.length === 0) {
+          dynamicEventsContainer.innerHTML = `
+            <div class="empty-events-notice">
+              Seleccione uno o más eventos en la <strong>Sección 2</strong> para desplegar las opciones de propuesta de colaboración correspondientes.
+            </div>
+          `;
+        }
+      }
+    });
+
+    // 4. Delegación para mostrar/ocultar campos dinámicos y sincronizar rango de fechas
+    dynamicEventsContainer.addEventListener("change", (e) => {
+      // Sincronizar fecha mínima de fin cuando se elige fecha de inicio
+      if (e.target.type === "date" && e.target.name.endsWith("[inicio]")) {
+        const grid = e.target.closest(".date-range-grid");
+        const endInput = grid ? grid.querySelector('input[name$="[fin]"]') : null;
+        if (endInput) {
+          endInput.min = e.target.value;
+          if (endInput.value && endInput.value < e.target.value) {
+            endInput.value = e.target.value;
+          }
+        }
+        return;
+      }
+
+      const targetId = e.target.dataset.toggleTarget;
+      if (!targetId) return;
+      const wrap = document.getElementById(targetId);
+      if (wrap) {
+        wrap.classList.toggle("visible", e.target.checked);
+        if (!e.target.checked) {
+          wrap.querySelectorAll("input").forEach(inp => {
+            inp.value = "";
+            if (inp.type === "date") inp.removeAttribute("min");
+          });
+        }
+      }
+    });
+
+    // 5. Lógica condicional Sección 4 (Sí / No -> campo abierto)
+    document.querySelectorAll('input[name="sujeto_condicion"]').forEach(radio => {
+      radio.addEventListener("change", (e) => {
+        const wrap = document.getElementById("condicionDetalleWrap");
+        const textarea = document.getElementById("condicion_detalle");
+        if (e.target.value === "Sí" && e.target.checked) {
+          wrap.classList.add("visible");
+          textarea.setAttribute("required", "required");
+        } else {
+          wrap.classList.remove("visible");
+          textarea.removeAttribute("required");
+          textarea.value = "";
+        }
+      });
+    });
+
+    // 6. Manejo de envío del formulario
+    document.getElementById("ocvForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const dataObj = Object.fromEntries(formData.entries());
+      console.log("Datos listos para enviar al servidor:", dataObj);
+
+      document.getElementById("successBanner").style.display = "block";
+      document.getElementById("successBanner").scrollIntoView({ behavior: "smooth" });
+    });
+  </script>
+
+</body>
+</html>
