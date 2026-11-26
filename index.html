@@ -47,8 +47,7 @@
       justify-content: center;
       align-items: center;
       z-index: 9999;
-      transition: opacity 0.5s ease, visibility 0.5s ease;
-      cursor: pointer;
+      transition: opacity 0.6s ease, visibility 0.6s ease;
     }
 
     #splash-screen.hidden {
@@ -61,7 +60,7 @@
       max-width: 280px;
       width: 70%;
       height: auto;
-      animation: splashFadeIn 0.7s ease-out forwards;
+      animation: splashFadeIn 0.8s ease-out forwards;
     }
 
     .splash-loader {
@@ -511,8 +510,8 @@
 <body>
 
   <!-- Pantalla de bienvenida (Splash) -->
-  <div id="splash-screen" onclick="hideSplash()">
-    <img src="logotipo-ocv-monterrey.svg" alt="OCV Monterrey" onerror="this.style.display='none'" />
+  <div id="splash-screen">
+    <img src="logotipo-ocv-monterrey.svg" alt="OCV Monterrey" />
     <div class="splash-loader"></div>
   </div>
 
@@ -520,7 +519,7 @@
     <!-- Encabezado -->
     <header class="form-header">
       <div class="logo-bar">
-        <img src="logotipo-ocv-monterrey.svg" alt="OCV Monterrey" class="header-logo" onerror="this.style.display='none'" />
+        <img src="logotipo-ocv-monterrey.svg" alt="OCV Monterrey" class="header-logo" />
       </div>
       <h1>OCV Monterrey | Eventos 2027</h1>
       <p class="subtitle">Oficina de Convenciones y Visitantes de Monterrey</p>
@@ -589,7 +588,9 @@
           Seleccionar todas las opciones que correspondan.
         </p>
 
-        <div class="options-list" id="eventsSelectorList"></div>
+        <div class="options-list" id="eventsSelectorList">
+          <!-- Se llena dinámicamente desde JS para mantener sincronía exacta con Sección 3 -->
+        </div>
       </section>
 
       <!-- SECCIÓN 3 -->
@@ -673,17 +674,14 @@
   </div>
 
   <script>
-    function hideSplash() {
+    // Control del Splash Screen
+    window.addEventListener("load", () => {
       const splash = document.getElementById("splash-screen");
-      if (!splash) return;
-      splash.classList.add("hidden");
       setTimeout(() => {
-        if (splash && splash.parentNode) splash.remove();
-      }, 550);
-    }
-
-    // Se ejecuta inmediatamente sin esperar recursos externos
-    setTimeout(hideSplash, 1400);
+        splash.classList.add("hidden");
+        setTimeout(() => splash.remove(), 650);
+      }, 1600);
+    });
 
     const EVENTOS_2027 = [
       { id: "ironman_70_3", nombre: "IronMan 70.3 Monterrey" },
@@ -700,6 +698,7 @@
     const eventsSelectorList = document.getElementById("eventsSelectorList");
     const dynamicEventsContainer = document.getElementById("dynamicEventsContainer");
 
+    // 1. Renderizar checkboxes de Sección 2
     EVENTOS_2027.forEach(ev => {
       const label = document.createElement("label");
       label.className = "check-item event-card-option";
@@ -710,6 +709,8 @@
       eventsSelectorList.appendChild(label);
     });
 
+    // Helper para generar listas de checkboxes dentro de cada evento
+    // mode: 'other_only' (solo abre texto en "Otro.") | 'all_inputs' (abre texto en todos, y calendario de rango en fechas)
     function renderCheckboxGroup(eventId, groupName, options, mode = "other_only") {
       const itemsHtml = options.map((opt, idx) => {
         const labelText = typeof opt === "string" ? opt : opt.label;
@@ -770,6 +771,7 @@
       return `<div class="options-list">${itemsHtml}</div>`;
     }
 
+    // 2. Generar tarjeta de Sección 3 para un evento específico
     function createEventProposalCard(ev) {
       const card = document.createElement("div");
       card.className = "event-proposal-card";
@@ -782,6 +784,7 @@
         </div>
         <div class="event-proposal-body">
 
+          <!-- A. APOYO EN HOSPEDAJE -->
           <div class="sub-block">
             <div class="sub-block-title">A. APOYO EN HOSPEDAJE</div>
 
@@ -823,6 +826,7 @@
             </div>
           </div>
 
+          <!-- B. ESPACIOS E INSTALACIONES -->
           <div class="sub-block">
             <div class="sub-block-title">B. ESPACIOS E INSTALACIONES</div>
 
@@ -851,6 +855,7 @@
             </div>
           </div>
 
+          <!-- C. BENEFICIOS ADICIONALES -->
           <div class="sub-block">
             <div class="sub-block-title">C. BENEFICIOS ADICIONALES</div>
 
@@ -874,6 +879,7 @@
       return card;
     }
 
+    // 3. Escuchar selección de eventos en Sección 2
     eventsSelectorList.addEventListener("change", (e) => {
       if (e.target.type !== "checkbox") return;
 
@@ -900,7 +906,9 @@
       }
     });
 
+    // 4. Delegación para mostrar/ocultar campos dinámicos y sincronizar rango de fechas
     dynamicEventsContainer.addEventListener("change", (e) => {
+      // Sincronizar fecha mínima de fin cuando se elige fecha de inicio
       if (e.target.type === "date" && e.target.name.endsWith("[inicio]")) {
         const grid = e.target.closest(".date-range-grid");
         const endInput = grid ? grid.querySelector('input[name$="[fin]"]') : null;
@@ -927,6 +935,7 @@
       }
     });
 
+    // 5. Lógica condicional Sección 4 (Sí / No -> campo abierto)
     document.querySelectorAll('input[name="sujeto_condicion"]').forEach(radio => {
       radio.addEventListener("change", (e) => {
         const wrap = document.getElementById("condicionDetalleWrap");
@@ -942,6 +951,7 @@
       });
     });
 
+    // 6. Manejo de envío del formulario
     document.getElementById("ocvForm").addEventListener("submit", (e) => {
       e.preventDefault();
       const formData = new FormData(e.target);
