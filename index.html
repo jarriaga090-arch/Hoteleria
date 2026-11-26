@@ -37,7 +37,7 @@
       padding: 2rem 1rem 4rem;
     }
 
-    /* Splash Screen */
+    /* Splash Screen controlado 100% por CSS (nunca se queda congelado) */
     #splash-screen {
       position: fixed;
       inset: 0;
@@ -47,14 +47,7 @@
       justify-content: center;
       align-items: center;
       z-index: 9999;
-      transition: opacity 0.5s ease, visibility 0.5s ease;
-      cursor: pointer;
-    }
-
-    #splash-screen.hidden {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
+      animation: autoHideSplash 0.6s ease 1.4s forwards;
     }
 
     #splash-screen img {
@@ -83,6 +76,24 @@
       background-color: var(--primary);
       border-radius: 999px;
       animation: splashSlide 1.2s ease-in-out infinite;
+    }
+
+    @keyframes autoHideSplash {
+      0% {
+        opacity: 1;
+        visibility: visible;
+      }
+      99% {
+        opacity: 0;
+        visibility: visible;
+        pointer-events: none;
+      }
+      100% {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        display: none;
+      }
     }
 
     @keyframes splashFadeIn {
@@ -511,7 +522,7 @@
 <body>
 
   <!-- Pantalla de bienvenida (Splash) -->
-  <div id="splash-screen" onclick="hideSplash()">
+  <div id="splash-screen">
     <img src="logotipo-ocv-monterrey.svg" alt="OCV Monterrey" onerror="this.style.display='none'" />
     <div class="splash-loader"></div>
   </div>
@@ -673,18 +684,6 @@
   </div>
 
   <script>
-    function hideSplash() {
-      const splash = document.getElementById("splash-screen");
-      if (!splash) return;
-      splash.classList.add("hidden");
-      setTimeout(() => {
-        if (splash && splash.parentNode) splash.remove();
-      }, 550);
-    }
-
-    // Se ejecuta inmediatamente sin esperar recursos externos
-    setTimeout(hideSplash, 1400);
-
     const EVENTOS_2027 = [
       { id: "ironman_70_3", nombre: "IronMan 70.3 Monterrey" },
       { id: "icpc_latam_2027", nombre: "The ICPC Latin America Championship 2027" },
