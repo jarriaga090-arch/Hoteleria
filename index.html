@@ -47,7 +47,8 @@
       justify-content: center;
       align-items: center;
       z-index: 9999;
-      transition: opacity 0.6s ease, visibility 0.6s ease;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+      cursor: pointer;
     }
 
     #splash-screen.hidden {
@@ -60,7 +61,7 @@
       max-width: 280px;
       width: 70%;
       height: auto;
-      animation: splashFadeIn 0.8s ease-out forwards;
+      animation: splashFadeIn 0.7s ease-out forwards;
     }
 
     .splash-loader {
@@ -232,6 +233,7 @@
     input[type="email"],
     input[type="tel"],
     input[type="number"],
+    input[type="date"],
     select,
     textarea {
       width: 100%;
@@ -306,13 +308,41 @@
     }
 
     .other-input-wrap {
-      margin-top: 0.45rem;
+      margin-top: 0.35rem;
+      margin-bottom: 0.4rem;
       margin-left: 1.75rem;
       display: none;
     }
 
     .other-input-wrap.visible {
       display: block;
+    }
+
+    /* Selector de rango de fechas con calendario */
+    .date-range-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+      background-color: var(--bg-subtle);
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .date-range-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .date-range-item span {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .date-range-item.full-span {
+      grid-column: 1 / -1;
     }
 
     /* Sección 3: Bloques dinámicos por evento */
@@ -465,11 +495,15 @@
       form {
         padding: 1.5rem 1.25rem;
       }
-      .grid-2 {
+      .grid-2,
+      .date-range-grid {
         grid-template-columns: 1fr;
       }
       .form-header h1 {
         font-size: 1.45rem;
+      }
+      .other-input-wrap {
+        margin-left: 0.75rem;
       }
     }
   </style>
@@ -477,8 +511,8 @@
 <body>
 
   <!-- Pantalla de bienvenida (Splash) -->
-  <div id="splash-screen">
-    <img src="logotipo-ocv-monterrey.svg" alt="OCV Monterrey" />
+  <div id="splash-screen" onclick="hideSplash()">
+    <img src="logotipo-ocv-monterrey.svg" alt="OCV Monterrey" onerror="this.style.display='none'" />
     <div class="splash-loader"></div>
   </div>
 
@@ -486,7 +520,7 @@
     <!-- Encabezado -->
     <header class="form-header">
       <div class="logo-bar">
-        <img src="logotipo-ocv-monterrey.svg" alt="OCV Monterrey" class="header-logo" />
+        <img src="logotipo-ocv-monterrey.svg" alt="OCV Monterrey" class="header-logo" onerror="this.style.display='none'" />
       </div>
       <h1>OCV Monterrey | Eventos 2027</h1>
       <p class="subtitle">Oficina de Convenciones y Visitantes de Monterrey</p>
@@ -555,9 +589,7 @@
           Seleccionar todas las opciones que correspondan.
         </p>
 
-        <div class="options-list" id="eventsSelectorList">
-          <!-- Se llena dinámicamente desde JS para mantener sincronía exacta con Sección 3 -->
-        </div>
+        <div class="options-list" id="eventsSelectorList"></div>
       </section>
 
       <!-- SECCIÓN 3 -->
@@ -641,14 +673,17 @@
   </div>
 
   <script>
-    // Control del Splash Screen
-    window.addEventListener("load", () => {
+    function hideSplash() {
       const splash = document.getElementById("splash-screen");
+      if (!splash) return;
+      splash.classList.add("hidden");
       setTimeout(() => {
-        splash.classList.add("hidden");
-        setTimeout(() => splash.remove(), 650);
-      }, 1600);
-    });
+        if (splash && splash.parentNode) splash.remove();
+      }, 550);
+    }
+
+    // Se ejecuta inmediatamente sin esperar recursos externos
+    setTimeout(hideSplash, 1400);
 
     const EVENTOS_2027 = [
       { id: "ironman_70_3", nombre: "IronMan 70.3 Monterrey" },
@@ -665,7 +700,6 @@
     const eventsSelectorList = document.getElementById("eventsSelectorList");
     const dynamicEventsContainer = document.getElementById("dynamicEventsContainer");
 
-    // 1. Renderizar checkboxes de Sección 2
     EVENTOS_2027.forEach(ev => {
       const label = document.createElement("label");
       label.className = "check-item event-card-option";
@@ -676,28 +710,66 @@
       eventsSelectorList.appendChild(label);
     });
 
-    // Helper para generar listas de checkboxes dentro de cada evento
-    function renderCheckboxGroup(eventId, groupName, options, hasOther = false) {
+    function renderCheckboxGroup(eventId, groupName, options, mode = "other_only") {
       const itemsHtml = options.map((opt, idx) => {
-        const isOther = hasOther && opt === "Otro.";
-        const otherAttr = isOther ? `data-toggle-other="${eventId}_${groupName}_otro"` : "";
+        const labelText = typeof opt === "string" ? opt : opt.label;
+        const inputType = typeof opt === "object" && opt.type ? opt.type : "text";
+        const placeholder = typeof opt === "object" && opt.placeholder ? opt.placeholder : "Especifique...";
+        const wrapId = `${eventId}_${groupName}_item_${idx}`;
+
+        let shouldHaveInput = false;
+        if (mode === "all_inputs") {
+          shouldHaveInput = true;
+        } else if (mode === "other_only" && labelText === "Otro.") {
+          shouldHaveInput = true;
+        }
+
+        const toggleAttr = shouldHaveInput ? `data-toggle-target="${wrapId}"` : "";
+
+        let fieldHtml = "";
+        if (shouldHaveInput) {
+          if (inputType === "daterange" || inputType === "daterange_time") {
+            fieldHtml = `
+              <div id="${wrapId}" class="other-input-wrap">
+                <div class="date-range-grid">
+                  <div class="date-range-item">
+                    <span>Fecha inicial (Del):</span>
+                    <input type="date" name="propuestas[${eventId}][${groupName}_detalle][${idx}][inicio]" />
+                  </div>
+                  <div class="date-range-item">
+                    <span>Fecha final (Al):</span>
+                    <input type="date" name="propuestas[${eventId}][${groupName}_detalle][${idx}][fin]" />
+                  </div>
+                  ${inputType === "daterange_time" ? `
+                    <div class="date-range-item full-span">
+                      <span>Horarios disponibles:</span>
+                      <input type="text" name="propuestas[${eventId}][${groupName}_detalle][${idx}][horario]" placeholder="Ej. De 8:00 a 18:00 hrs" />
+                    </div>
+                  ` : ""}
+                </div>
+              </div>
+            `;
+          } else {
+            fieldHtml = `
+              <div id="${wrapId}" class="other-input-wrap">
+                <input type="text" name="propuestas[${eventId}][${groupName}_detalle][${idx}]" placeholder="${placeholder}" />
+              </div>
+            `;
+          }
+        }
+
         return `
           <label class="check-item">
-            <input type="checkbox" name="propuestas[${eventId}][${groupName}][]" value="${opt}" ${otherAttr} />
-            <span>${opt}</span>
+            <input type="checkbox" name="propuestas[${eventId}][${groupName}][]" value="${labelText}" ${toggleAttr} />
+            <span>${labelText}</span>
           </label>
-          ${isOther ? `
-            <div id="${eventId}_${groupName}_otro" class="other-input-wrap">
-              <input type="text" name="propuestas[${eventId}][${groupName}_otro_detalle]" placeholder="Especifique..." />
-            </div>
-          ` : ""}
+          ${fieldHtml}
         `;
       }).join("");
 
       return `<div class="options-list">${itemsHtml}</div>`;
     }
 
-    // 2. Generar tarjeta de Sección 3 para un evento específico
     function createEventProposalCard(ev) {
       const card = document.createElement("div");
       card.className = "event-proposal-card";
@@ -710,7 +782,6 @@
         </div>
         <div class="event-proposal-body">
 
-          <!-- A. APOYO EN HOSPEDAJE -->
           <div class="sub-block">
             <div class="sub-block-title">A. APOYO EN HOSPEDAJE</div>
 
@@ -723,36 +794,35 @@
                 "Descuento especial para grupos.",
                 "Apoyo parcial en hospedaje.",
                 "Otro."
-              ], true)}
+              ], "other_only")}
             </div>
 
             <div class="question-block">
               <div class="question-title">2. En caso de ofrecer habitaciones en cortesía:</div>
               ${renderCheckboxGroup(ev.id, "cortesia_detalles", [
-                "Tipo de habitación disponible.",
-                "Número de habitaciones que podría otorgar.",
-                "Número de noches disponibles.",
-                "Fechas de disponibilidad.",
-                "¿El apoyo contempla desayuno?",
-                "¿Existen condiciones o restricciones?"
-              ], false)}
+                { label: "Tipo de habitación disponible.", placeholder: "Ej. Sencilla, Doble, Suite..." },
+                { label: "Número de habitaciones que podría otorgar.", placeholder: "Ej. 5 habitaciones" },
+                { label: "Número de noches disponibles.", placeholder: "Ej. 3 noches" },
+                { label: "Fechas de disponibilidad.", type: "daterange" },
+                { label: "¿El apoyo contempla desayuno?", placeholder: "Ej. Sí, desayuno buffet / No incluye" },
+                { label: "¿Existen condiciones o restricciones?", placeholder: "Indique condiciones o restricciones..." }
+              ], "all_inputs")}
             </div>
 
             <div class="question-block">
               <div class="question-title">3. En caso de ofrecer tarifas preferenciales:</div>
               ${renderCheckboxGroup(ev.id, "tarifas_detalles", [
-                "Tipo de habitación.",
-                "Tarifa pública.",
-                "Tarifa preferencial ofrecida.",
-                "Porcentaje de descuento.",
-                "Vigencia de la tarifa.",
-                "¿La tarifa incluye desayuno?",
-                "¿Aplica para participantes, acompañantes, staff o todos?"
-              ], false)}
+                { label: "Tipo de habitación.", placeholder: "Ej. Estándar sencilla / doble" },
+                { label: "Tarifa pública.", placeholder: "Ej. $2,500 MXN + impuestos" },
+                { label: "Tarifa preferencial ofrecida.", placeholder: "Ej. $1,850 MXN + impuestos" },
+                { label: "Porcentaje de descuento.", placeholder: "Ej. 25% de descuento" },
+                { label: "Vigencia de la tarifa.", type: "daterange" },
+                { label: "¿La tarifa incluye desayuno?", placeholder: "Ej. Sí / No" },
+                { label: "¿Aplica para participantes, acompañantes, staff o todos?", placeholder: "Especifique a quién aplica..." }
+              ], "all_inputs")}
             </div>
           </div>
 
-          <!-- B. ESPACIOS E INSTALACIONES -->
           <div class="sub-block">
             <div class="sub-block-title">B. ESPACIOS E INSTALACIONES</div>
 
@@ -765,23 +835,22 @@
                 "Terrazas o áreas al aire libre.",
                 "Áreas comerciales o de exhibición.",
                 "Otro."
-              ], true)}
+              ], "other_only")}
             </div>
 
             <div class="question-block">
               <div class="question-title">5. En caso de contar con disponibilidad:</div>
               ${renderCheckboxGroup(ev.id, "espacios_disponibilidad", [
-                "Nombre o tipo de espacio.",
-                "Capacidad máxima.",
-                "Fechas y horarios disponibles.",
-                "¿Se ofrecería en cortesía o con tarifa preferencial?",
-                "¿Incluye mobiliario y equipo audiovisual?",
-                "Condiciones de uso."
-              ], false)}
+                { label: "Nombre o tipo de espacio.", placeholder: "Ej. Salón Monterrey / Terraza Norte" },
+                { label: "Capacidad máxima.", placeholder: "Ej. 120 personas en montaje auditorio" },
+                { label: "Fechas y horarios disponibles.", type: "daterange_time" },
+                { label: "¿Se ofrecería en cortesía o con tarifa preferencial?", placeholder: "Ej. En cortesía / Tarifa preferencial de $..." },
+                { label: "¿Incluye mobiliario y equipo audiovisual?", placeholder: "Especifique qué incluye..." },
+                { label: "Condiciones de uso.", placeholder: "Indique condiciones de uso del espacio..." }
+              ], "all_inputs")}
             </div>
           </div>
 
-          <!-- C. BENEFICIOS ADICIONALES -->
           <div class="sub-block">
             <div class="sub-block-title">C. BENEFICIOS ADICIONALES</div>
 
@@ -795,7 +864,7 @@
                 "Salas de juntas.",
                 "Transporte.",
                 "Otro."
-              ], true)}
+              ], "other_only")}
             </div>
           </div>
 
@@ -805,7 +874,6 @@
       return card;
     }
 
-    // 3. Escuchar selección de eventos en Sección 2
     eventsSelectorList.addEventListener("change", (e) => {
       if (e.target.type !== "checkbox") return;
 
@@ -832,21 +900,33 @@
       }
     });
 
-    // 4. Delegación para mostrar/ocultar campos "Otro" en checkboxes dinámicos
     dynamicEventsContainer.addEventListener("change", (e) => {
-      const targetId = e.target.dataset.toggleOther;
+      if (e.target.type === "date" && e.target.name.endsWith("[inicio]")) {
+        const grid = e.target.closest(".date-range-grid");
+        const endInput = grid ? grid.querySelector('input[name$="[fin]"]') : null;
+        if (endInput) {
+          endInput.min = e.target.value;
+          if (endInput.value && endInput.value < e.target.value) {
+            endInput.value = e.target.value;
+          }
+        }
+        return;
+      }
+
+      const targetId = e.target.dataset.toggleTarget;
       if (!targetId) return;
       const wrap = document.getElementById(targetId);
       if (wrap) {
         wrap.classList.toggle("visible", e.target.checked);
         if (!e.target.checked) {
-          const input = wrap.querySelector("input");
-          if (input) input.value = "";
+          wrap.querySelectorAll("input").forEach(inp => {
+            inp.value = "";
+            if (inp.type === "date") inp.removeAttribute("min");
+          });
         }
       }
     });
 
-    // 5. Lógica condicional Sección 4 (Sí / No -> campo abierto)
     document.querySelectorAll('input[name="sujeto_condicion"]').forEach(radio => {
       radio.addEventListener("change", (e) => {
         const wrap = document.getElementById("condicionDetalleWrap");
@@ -862,7 +942,6 @@
       });
     });
 
-    // 6. Manejo de envío del formulario
     document.getElementById("ocvForm").addEventListener("submit", (e) => {
       e.preventDefault();
       const formData = new FormData(e.target);
