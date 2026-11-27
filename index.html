@@ -525,20 +525,36 @@
       transition: background-color 0.2s ease, transform 0.1s ease;
     }
 
-    .submit-btn:hover {
+    .submit-btn:hover:not(:disabled) {
       background-color: var(--primary-hover);
     }
 
-    .submit-btn:active {
+    .submit-btn:active:not(:disabled) {
       transform: scale(0.995);
     }
 
-    /* Mensaje de confirmación al enviar */
+    .submit-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    /* Mensajes de estado al enviar */
     .success-banner {
       display: none;
       background-color: #ecfdf5;
       border: 1px solid #10b981;
       color: #065f46;
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      margin-top: 1.5rem;
+      text-align: center;
+    }
+
+    .error-banner {
+      display: none;
+      background-color: #fef2f2;
+      border: 1px solid #ef4444;
+      color: #991b1b;
       padding: 1.5rem;
       border-radius: var(--radius);
       margin-top: 1.5rem;
@@ -695,17 +711,24 @@
         </div>
       </section>
 
-      <button type="submit" class="submit-btn">Enviar propuesta de colaboración</button>
+      <button type="submit" id="submitBtn" class="submit-btn">Enviar propuesta de colaboración</button>
 
       <div id="successBanner" class="success-banner">
-        <strong>¡Propuesta registrada correctamente!</strong><br />
-        Hemos recibido la información de su hotel para los eventos 2027. El equipo de OCV Monterrey se pondrá en contacto a la brevedad.
+        <strong>¡Propuesta enviada correctamente!</strong><br />
+        Hemos recibido la información de su hotel y sus cartas propuesta para los eventos 2027. El equipo de OCV Monterrey se pondrá en contacto a la brevedad.
+      </div>
+
+      <div id="errorBanner" class="error-banner">
+        <strong>Ocurrió un problema al enviar la propuesta.</strong><br />
+        <span id="errorDetail">Por favor intente nuevamente en unos momentos.</span>
       </div>
 
     </form>
   </div>
 
   <script>
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwf4ee4v0EpUNk3CD1-ir-KPJv0AYE-blosxz-2HNQAgxnGMQYr0IxTd-Ca46Y_gE1R/exec";
+
     const EVENTOS_2027 = [
       { id: "ironman_70_3", nombre: "IronMan 70.3 Monterrey" },
       { id: "icpc_latam_2027", nombre: "The ICPC Latin America Championship 2027" },
@@ -788,13 +811,15 @@
         `;
       }).join("");
 
-      return `<div class="options-list">${itemsHtml}</div>`;
+      return `<div class="options-list" data-group-name="${groupName}">${itemsHtml}</div>`;
     }
 
     function createEventProposalCard(ev) {
       const card = document.createElement("div");
       card.className = "event-proposal-card";
       card.id = `proposal_card_${ev.id}`;
+      card.dataset.eventId = ev.id;
+      card.dataset.eventName = ev.nombre;
 
       card.innerHTML = `
         <div class="event-proposal-header" onclick="this.parentElement.classList.toggle('collapsed')">
@@ -975,14 +1000,157 @@
       });
     });
 
-    document.getElementById("ocvForm").addEventListener("submit", (e) => {
-      e.preventDefault();
-      const formData = new FormData(e.target);
-      const dataObj = Object.fromEntries(formData.entries());
-      console.log("Datos listos para enviar al servidor:", dataObj);
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64String = reader.result.split(",")[1];
+          resolve(base64String);
+        };
+        reader.onerror = (error) => reject(error);
+        reader.readAsDataURL(file);
+      });
+    }
 
-      document.getElementById("successBanner").style.display = "block";
-      document.getElementById("successBanner").scrollIntoView({ behavior: "smooth" });
+    function extraerGrupoEvento(card, groupName) {
+      const groupContainer = card.querySelector(`.options-list[data-group-name="${groupName}"]`);
+      if (!groupContainer) return [];
+
+      const resultados = [];
+      const checkboxes = groupContainer.querySelectorAll('input[type="checkbox"]');
+
+      checkboxes.forEach(cb => {
+        if (!cb.checked) return;
+
+        let detalle = "";
+        const targetId = cb.dataset.toggleTarget;
+        if (targetId) {
+          const wrap = document.getElementById(targetId);
+          if (wrap) {
+            const inicio = wrap.querySelector('input[name$="[inicio]"]');
+            const fin = wrap.querySelector('input[name$="[fin]"]');
+            const horario = wrap.querySelector('input[name$="[horario]"]');
+            const texto = wrap.querySelector('input[type="text"]:not([name$="[horario]"])');
+
+            if (inicio || fin) {
+              const partes = [];
+              if (inicio && inicio.value) partes.push(`Del ${inicio.value}`);
+              if (fin && fin.value) partes.push(`al ${fin.value}`);
+              if (horario && horario.value) partes.push(`Horario: ${horario.value}`);
+              detalle = partes.join(" ");
+            } else if (texto && texto.value.trim() !== "") {
+              detalle = texto.value.trim();
+            }
+          }
+        }
+
+        resultados.push({
+          opcion: cb.value,
+          detalle: detalle
+        });
+      });
+
+      return resultados;
+    }
+
+    document.getElementById("ocvForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const submitBtn = document.getElementById("submitBtn");
+      const successBanner = document.getElementById("successBanner");
+      const errorBanner = document.getElementById("errorBanner");
+      const errorDetail = document.getElementById("errorDetail");
+
+      successBanner.style.display = "none";
+      errorBanner.style.display = "none";
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Generando documento y enviando propuesta...";
+
+      try {
+        const general = {
+          hotel_nombre: document.getElementById("hotel_nombre").value.trim(),
+          ejecutivo_nombre: document.getElementById("ejecutivo_nombre").value.trim(),
+          ejecutivo_cargo: document.getElementById("ejecutivo_cargo").value.trim(),
+          ejecutivo_correo: document.getElementById("ejecutivo_correo").value.trim(),
+          ejecutivo_telefono: document.getElementById("ejecutivo_telefono").value.trim(),
+          hotel_categoria: document.getElementById("hotel_categoria").value,
+          hotel_habitaciones: document.getElementById("hotel_habitaciones").value
+        };
+
+        const eventCards = document.querySelectorAll(".event-proposal-card");
+        const eventos = [];
+        const archivos = [];
+
+        for (const card of eventCards) {
+          const eventId = card.dataset.eventId;
+          const eventName = card.dataset.eventName;
+          const fileInput = document.getElementById(`carta_${eventId}`);
+          let archivoNombre = "";
+
+          if (fileInput && fileInput.files && fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            archivoNombre = file.name;
+            const base64 = await fileToBase64(file);
+            archivos.push({
+              eventId: eventId,
+              eventName: eventName,
+              fileName: file.name,
+              mimeType: file.type,
+              base64: base64
+            });
+          }
+
+          eventos.push({
+            id: eventId,
+            nombre: eventName,
+            archivo_nombre: archivoNombre,
+            tipo_apoyo: extraerGrupoEvento(card, "tipo_apoyo"),
+            cortesia_detalles: extraerGrupoEvento(card, "cortesia_detalles"),
+            tarifas_detalles: extraerGrupoEvento(card, "tarifas_detalles"),
+            espacios_tipos: extraerGrupoEvento(card, "espacios_tipos"),
+            espacios_disponibilidad: extraerGrupoEvento(card, "espacios_disponibilidad"),
+            beneficios_adicionales: extraerGrupoEvento(card, "beneficios_adicionales")
+          });
+        }
+
+        const radioCondicion = document.querySelector('input[name="sujeto_condicion"]:checked');
+        const condiciones = {
+          sujeto_condicion: radioCondicion ? radioCondicion.value : "",
+          condicion_detalle: document.getElementById("condicion_detalle").value.trim(),
+          comentarios_adicionales: document.getElementById("comentarios_adicionales").value.trim()
+        };
+
+        const payload = { general, eventos, condiciones, archivos };
+
+        await fetch(APPS_SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        successBanner.style.display = "block";
+        successBanner.scrollIntoView({ behavior: "smooth" });
+        e.target.reset();
+        dynamicEventsContainer.innerHTML = `
+          <div class="empty-events-notice">
+            Seleccione uno o más eventos en la <strong>Sección 2</strong> para desplegar las opciones de propuesta de colaboración correspondientes.
+          </div>
+        `;
+        document.getElementById("condicionDetalleWrap").classList.remove("visible");
+
+      } catch (err) {
+        console.error("Error enviando formulario:", err);
+        errorDetail.textContent = err.message || "No se pudo conectar con el servidor.";
+        errorBanner.style.display = "block";
+        errorBanner.scrollIntoView({ behavior: "smooth" });
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Enviar propuesta de colaboración";
+      }
     });
   </script>
 
