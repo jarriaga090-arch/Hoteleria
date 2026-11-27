@@ -804,6 +804,18 @@
         <div class="event-proposal-body">
 
           <div class="sub-block">
+            <div class="sub-block-title">CARTA PROPUESTA</div>
+
+            <div class="question-block">
+              <label class="question-title" for="carta_${ev.id}" style="display: block;">Adjunta la carta propuesta</label>
+              <div class="file-upload-box">
+                <input type="file" id="carta_${ev.id}" name="propuestas[${ev.id}][carta_propuesta]" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" />
+                <span class="file-hint">Formatos permitidos: PDF, Word (.doc, .docx) o imagen (JPG, PNG).</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="sub-block">
             <div class="sub-block-title">A. APOYO EN HOSPEDAJE</div>
 
             <div class="question-block">
@@ -886,18 +898,6 @@
                 "Transporte.",
                 "Otro."
               ], "other_only")}
-            </div>
-          </div>
-
-          <div class="sub-block">
-            <div class="sub-block-title">D. CARTA PROPUESTA</div>
-
-            <div class="question-block">
-              <label class="question-title" for="carta_${ev.id}" style="display: block;">7. Adjunta la carta propuesta</label>
-              <div class="file-upload-box">
-                <input type="file" id="carta_${ev.id}" name="propuestas[${ev.id}][carta_propuesta]" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" />
-                <span class="file-hint">Formatos permitidos: PDF, Word (.doc, .docx) o imagen (JPG, PNG).</span>
-              </div>
             </div>
           </div>
 
