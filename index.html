@@ -329,6 +329,35 @@
       display: block;
     }
 
+    /* Barra deslizante de porcentaje */
+    .range-slider-box {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background-color: var(--bg-subtle);
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .range-slider-box input[type="range"] {
+      flex: 1;
+      accent-color: var(--primary);
+      cursor: pointer;
+      height: 6px;
+    }
+
+    .range-value-badge {
+      min-width: 58px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 0.92rem;
+      color: #ffffff;
+      background-color: var(--primary);
+      padding: 0.3rem 0.6rem;
+      border-radius: 6px;
+    }
+
     /* Selector de rango de fechas con calendario */
     .date-range-grid {
       display: grid;
@@ -772,7 +801,26 @@
 
         let fieldHtml = "";
         if (shouldHaveInput) {
-          if (inputType === "daterange" || inputType === "daterange_time") {
+          if (inputType === "yesno") {
+            fieldHtml = `
+              <div id="${wrapId}" class="other-input-wrap">
+                <select name="propuestas[${eventId}][${groupName}_detalle][${idx}]">
+                  <option value="">Seleccione una opción...</option>
+                  <option value="Sí">Sí</option>
+                  <option value="No">No</option>
+                </select>
+              </div>
+            `;
+          } else if (inputType === "percentage") {
+            fieldHtml = `
+              <div id="${wrapId}" class="other-input-wrap">
+                <div class="range-slider-box">
+                  <input type="range" min="0" max="100" step="1" value="0" name="propuestas[${eventId}][${groupName}_detalle][${idx}]" />
+                  <span class="range-value-badge">0%</span>
+                </div>
+              </div>
+            `;
+          } else if (inputType === "daterange" || inputType === "daterange_time") {
             fieldHtml = `
               <div id="${wrapId}" class="other-input-wrap">
                 <div class="date-range-grid">
@@ -862,7 +910,7 @@
                 { label: "Número de habitaciones que podría otorgar.", placeholder: "Ej. 5 habitaciones" },
                 { label: "Número de noches disponibles.", placeholder: "Ej. 3 noches" },
                 { label: "Fechas de disponibilidad.", type: "daterange" },
-                { label: "¿El apoyo contempla desayuno?", placeholder: "Ej. Sí, desayuno buffet / No incluye" },
+                { label: "¿El apoyo contempla desayuno?", type: "yesno" },
                 { label: "¿Existen condiciones o restricciones?", placeholder: "Indique condiciones o restricciones..." }
               ], "all_inputs")}
             </div>
@@ -873,9 +921,9 @@
                 { label: "Tipo de habitación.", placeholder: "Ej. Estándar sencilla / doble" },
                 { label: "Tarifa pública.", placeholder: "Ej. $2,500 MXN + impuestos" },
                 { label: "Tarifa preferencial ofrecida.", placeholder: "Ej. $1,850 MXN + impuestos" },
-                { label: "Porcentaje de descuento.", placeholder: "Ej. 25% de descuento" },
+                { label: "Porcentaje de descuento.", type: "percentage" },
                 { label: "Vigencia de la tarifa.", type: "daterange" },
-                { label: "¿La tarifa incluye desayuno?", placeholder: "Ej. Sí / No" },
+                { label: "¿La tarifa incluye desayuno?", type: "yesno" },
                 { label: "¿Aplica para participantes, acompañantes, staff o todos?", placeholder: "Especifique a quién aplica..." }
               ], "all_inputs")}
             </div>
@@ -958,6 +1006,14 @@
       }
     });
 
+    // Actualizar etiqueta visual de porcentaje en tiempo real al arrastrar la barra
+    dynamicEventsContainer.addEventListener("input", (e) => {
+      if (e.target.type === "range") {
+        const badge = e.target.parentElement.querySelector(".range-value-badge");
+        if (badge) badge.textContent = `${e.target.value}%`;
+      }
+    });
+
     dynamicEventsContainer.addEventListener("change", (e) => {
       if (e.target.type === "date" && e.target.name.endsWith("[inicio]")) {
         const grid = e.target.closest(".date-range-grid");
@@ -977,8 +1033,14 @@
       if (wrap) {
         wrap.classList.toggle("visible", e.target.checked);
         if (!e.target.checked) {
-          wrap.querySelectorAll("input").forEach(inp => {
-            inp.value = "";
+          wrap.querySelectorAll("input, select").forEach(inp => {
+            if (inp.type === "range") {
+              inp.value = "0";
+              const badge = wrap.querySelector(".range-value-badge");
+              if (badge) badge.textContent = "0%";
+            } else {
+              inp.value = "";
+            }
             if (inp.type === "date") inp.removeAttribute("min");
           });
         }
@@ -1030,6 +1092,8 @@
             const inicio = wrap.querySelector('input[name$="[inicio]"]');
             const fin = wrap.querySelector('input[name$="[fin]"]');
             const horario = wrap.querySelector('input[name$="[horario]"]');
+            const selectEl = wrap.querySelector("select");
+            const rangeEl = wrap.querySelector('input[type="range"]');
             const texto = wrap.querySelector('input[type="text"]:not([name$="[horario]"])');
 
             if (inicio || fin) {
@@ -1038,6 +1102,10 @@
               if (fin && fin.value) partes.push(`al ${fin.value}`);
               if (horario && horario.value) partes.push(`Horario: ${horario.value}`);
               detalle = partes.join(" ");
+            } else if (selectEl && selectEl.value !== "") {
+              detalle = selectEl.value;
+            } else if (rangeEl) {
+              detalle = `${rangeEl.value}%`;
             } else if (texto && texto.value.trim() !== "") {
               detalle = texto.value.trim();
             }
